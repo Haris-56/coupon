@@ -22,8 +22,7 @@ export interface ICoupon extends Document {
     imageUrl?: string; // Optional specific image
     seoTitle?: string;
     seoDescription?: string;
-    clicks: number;
-    imageUrl?: string; // Optional specific image
+
     createdAt: Date;
     updatedAt: Date;
 }

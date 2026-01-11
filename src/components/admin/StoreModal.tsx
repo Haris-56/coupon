@@ -23,7 +23,7 @@ export function StoreModal({
     };
 
     useEffect(() => {
-        if (state?.success) {
+        if ((state as any)?.success) {
             onClose();
             // Reset form/state if needed, but modal unmounts usually
         }
@@ -96,7 +96,7 @@ export function StoreModal({
                         </label>
                     </div>
 
-                    {state?.message && !state.success && (
+                    {state?.message && !(state as any).success && (
                         <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{state.message}</p>
                     )}
 

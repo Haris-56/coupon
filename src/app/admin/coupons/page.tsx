@@ -24,7 +24,7 @@ export default async function CouponsPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-slate-800">Coupon Management</h1>
-                <CouponsClientConfig stores={stores} />
+                <CouponsClientConfig />
             </div>
 
             <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">

@@ -17,7 +17,7 @@ export function CouponModal({
     const [state, action, isPending] = useActionState(createCoupon, undefined);
 
     useEffect(() => {
-        if (state?.success) {
+        if ((state as any)?.success) {
             onClose();
         }
     }, [state, onClose]);
@@ -117,7 +117,7 @@ export function CouponModal({
                         </label>
                     </div>
 
-                    {state?.message && !state.success && (
+                    {state?.message && !(state as any).success && (
                         <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{state.message}</p>
                     )}
 
