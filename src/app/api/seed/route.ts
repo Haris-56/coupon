@@ -4,10 +4,25 @@ import { connectToDatabase } from '@/lib/db';
 import StoreModel from '@/models/Store';
 import Coupon from '@/models/Coupon';
 import Category from '@/models/Category';
+import bcrypt from 'bcryptjs';
+import User from '@/models/User';
 
 export async function GET() {
     try {
         await connectToDatabase();
+
+        // 0. Create Admin User
+        const adminEmail = 'admin@gmail.com';
+        let adminUser = await User.findOne({ email: adminEmail });
+        if (!adminUser) {
+            const passwordHash = await bcrypt.hash('admin123', 10);
+            await User.create({
+                name: 'Admin User',
+                email: adminEmail,
+                passwordHash,
+                role: 'ADMIN'
+            });
+        }
 
         // 1. Create Categories
         const categoriesData = [
