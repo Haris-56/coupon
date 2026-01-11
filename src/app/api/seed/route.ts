@@ -14,6 +14,7 @@ export async function GET() {
         // 0. Create Admin User
         const adminEmail = 'admin@gmail.com';
         let adminUser = await User.findOne({ email: adminEmail });
+        let adminStatus = 'Existing';
         if (!adminUser) {
             const passwordHash = await bcrypt.hash('admin123', 10);
             await User.create({
@@ -22,6 +23,15 @@ export async function GET() {
                 passwordHash,
                 role: 'ADMIN'
             });
+            adminStatus = 'Created';
+        } else {
+            // Update to ensure it's admin role and password if you want, 
+            // but for now just report status.
+            adminUser.role = 'ADMIN';
+            const passwordHash = await bcrypt.hash('admin123', 10);
+            adminUser.passwordHash = passwordHash;
+            await adminUser.save();
+            adminStatus = 'Updated (Password reset to admin123)';
         }
 
         // 1. Create Categories
@@ -182,7 +192,11 @@ export async function GET() {
             }
         }
 
-        return NextResponse.json({ success: true, message: `Seeding complete. Created ${createdCount} new coupons.` });
+        return NextResponse.json({
+            success: true,
+            message: `Seeding complete. Created ${createdCount} new coupons.`,
+            adminStatus
+        });
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
