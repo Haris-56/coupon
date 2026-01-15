@@ -1,11 +1,14 @@
 
 import { v2 as cloudinary } from 'cloudinary';
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Configure Cloudinary only once
+if (!cloudinary.config().api_key) {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+}
 
 export async function uploadImage(file: File, folder: string) {
     if (!file || file.size === 0) return null;
