@@ -59,11 +59,7 @@ export default function LoginPage() {
                         Sign up
                     </Link>
                 </div>
-                <div className="mt-2 text-center text-sm">
-                    <Link href="/forgot-password" className="text-slate-400 hover:text-slate-600">
-                        Forgot password?
-                    </Link>
-                </div>
+                {/* Forgot password link removed as page does not exist */}
             </div>
         </div>
     );
