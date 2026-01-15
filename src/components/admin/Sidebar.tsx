@@ -28,9 +28,9 @@ const navItems = [
     { name: 'Categories', href: '/admin/categories', icon: Tag },
     { name: 'Sub Categories', href: '/admin/sub-categories', icon: Layers },
     { name: 'Stores', href: '/admin/stores', icon: Store },
-    { name: 'Pages', href: '/admin/pages', icon: FileText },
+    // { name: 'Pages', href: '/admin/pages', icon: FileText },
     { name: 'Users', href: '/admin/users', icon: Users },
-    { name: 'Subscribers', href: '/admin/subscribers', icon: Bell },
+    // { name: 'Subscribers', href: '/admin/subscribers', icon: Bell },
     { name: 'Email Templates', href: '/admin/email-templates', icon: Mail },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
