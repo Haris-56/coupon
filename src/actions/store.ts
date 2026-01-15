@@ -8,9 +8,7 @@ import { z } from 'zod';
 import { verifySession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import crypto from 'crypto';
+import { uploadImage } from '@/lib/cloudinary';
 
 const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 
@@ -29,27 +27,7 @@ const StoreSchema = z.object({
     logoUrl: z.string().optional(),
 });
 
-async function handleFileUpload(imageFile: File | null) {
-    if (!imageFile || imageFile.size === 0) return null;
-    if (imageFile.size > MAX_FILE_SIZE) throw new Error('Image size exceeds 3MB limit');
-
-    const bytes = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const fileExtension = imageFile.name.split('.').pop();
-    const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'stores');
-
-    try {
-        await mkdir(uploadDir, { recursive: true });
-        const path = join(uploadDir, fileName);
-        await writeFile(path, buffer);
-        return `/uploads/stores/${fileName}`;
-    } catch (error) {
-        console.error('File upload error:', error);
-        throw new Error('Failed to upload image');
-    }
-}
+// Local file upload handling removed in favor of Cloudinary
 
 export async function createStore(prevState: any, formData: FormData) {
     const session = await verifySession();
@@ -63,7 +41,11 @@ export async function createStore(prevState: any, formData: FormData) {
     }
 
     try {
-        const logoUrl = await handleFileUpload(formData.get('imageFile') as File | null);
+        const imageFile = formData.get('imageFile') as File | null;
+        let logoUrl = null;
+        if (imageFile && imageFile.size > 0) {
+            logoUrl = await uploadImage(imageFile, 'stores');
+        }
 
         const validatedFields = StoreSchema.safeParse({
             name: formData.get('name'),
@@ -120,7 +102,11 @@ export async function updateStore(prevState: any, formData: FormData) {
         const existingStore = await StoreModel.findById(id);
         if (!existingStore) return { message: 'Store not found' };
 
-        const logoUrl = await handleFileUpload(formData.get('imageFile') as File | null);
+        const imageFile = formData.get('imageFile') as File | null;
+        let logoUrl = existingStore.logoUrl;
+        if (imageFile && imageFile.size > 0) {
+            logoUrl = (await uploadImage(imageFile, 'stores')) || existingStore.logoUrl;
+        }
 
         const validatedFields = StoreSchema.safeParse({
             name: formData.get('name'),

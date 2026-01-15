@@ -6,10 +6,8 @@ import { connectToDatabase } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { verifySession } from '@/lib/session';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import crypto from 'crypto';
 import { redirect } from 'next/navigation';
+import { uploadImage } from '@/lib/cloudinary';
 
 const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 
@@ -26,27 +24,7 @@ const CategorySchema = z.object({
     imageUrl: z.string().optional(),
 });
 
-async function handleFileUpload(imageFile: File | null) {
-    if (!imageFile || imageFile.size === 0) return null;
-    if (imageFile.size > MAX_FILE_SIZE) throw new Error('Image size exceeds 3MB limit');
-
-    const bytes = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const fileExtension = imageFile.name.split('.').pop();
-    const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'categories');
-
-    try {
-        await mkdir(uploadDir, { recursive: true });
-        const path = join(uploadDir, fileName);
-        await writeFile(path, buffer);
-        return `/uploads/categories/${fileName}`;
-    } catch (error) {
-        console.error('File upload error:', error);
-        throw new Error('Failed to upload image');
-    }
-}
+// Local file upload handling removed in favor of Cloudinary
 
 export async function createCategory(prevState: any, formData: FormData) {
     const session = await verifySession();
@@ -60,7 +38,11 @@ export async function createCategory(prevState: any, formData: FormData) {
     }
 
     try {
-        const imageUrl = await handleFileUpload(formData.get('image') as File | null);
+        const imageFile = formData.get('image') as File | null;
+        let imageUrl = null;
+        if (imageFile && imageFile.size > 0) {
+            imageUrl = await uploadImage(imageFile, 'categories');
+        }
 
         const validatedFields = CategorySchema.safeParse({
             name: formData.get('name'),
@@ -111,7 +93,11 @@ export async function updateCategory(prevState: any, formData: FormData) {
         const existingCategory = await Category.findById(id);
         if (!existingCategory) return { message: 'Category not found' };
 
-        const imageUrl = await handleFileUpload(formData.get('image') as File | null);
+        const imageFile = formData.get('image') as File | null;
+        let imageUrl = existingCategory.imageUrl;
+        if (imageFile && imageFile.size > 0) {
+            imageUrl = (await uploadImage(imageFile, 'categories')) || existingCategory.imageUrl;
+        }
 
         const validatedFields = CategorySchema.safeParse({
             name: formData.get('name'),

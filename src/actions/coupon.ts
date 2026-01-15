@@ -10,9 +10,7 @@ import { z } from 'zod';
 import { verifySession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import crypto from 'crypto';
+import { uploadImage } from '@/lib/cloudinary';
 
 const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 
@@ -46,27 +44,7 @@ const CouponSchema = z.object({
     }
 });
 
-async function handleFileUpload(imageFile: File | null) {
-    if (!imageFile || imageFile.size === 0) return null;
-    if (imageFile.size > MAX_FILE_SIZE) throw new Error('Image size exceeds 3MB limit');
-
-    const bytes = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const fileExtension = imageFile.name.split('.').pop();
-    const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'coupons');
-
-    try {
-        await mkdir(uploadDir, { recursive: true });
-        const path = join(uploadDir, fileName);
-        await writeFile(path, buffer);
-        return `/uploads/coupons/${fileName}`;
-    } catch (error) {
-        console.error('File upload error:', error);
-        throw new Error('Failed to upload image');
-    }
-}
+// Local file upload handling removed in favor of Cloudinary
 
 export async function createCoupon(prevState: any, formData: FormData) {
     console.log("--- createCoupon Action Started ---");
@@ -78,7 +56,11 @@ export async function createCoupon(prevState: any, formData: FormData) {
 
     try {
         console.log("Handling file upload...");
-        const imageUrl = await handleFileUpload(formData.get('imageFile') as File | null);
+        const imageFile = formData.get('imageFile') as File | null;
+        let imageUrl = null;
+        if (imageFile && imageFile.size > 0) {
+            imageUrl = await uploadImage(imageFile, 'coupons');
+        }
         console.log("File upload result:", imageUrl);
 
         // Prepare data handling checkboxes and selects
@@ -183,7 +165,11 @@ export async function updateCoupon(prevState: any, formData: FormData) {
         const existingCoupon = await Coupon.findById(id);
         if (!existingCoupon) return { message: 'Coupon not found' };
 
-        const imageUrl = await handleFileUpload(formData.get('imageFile') as File | null);
+        const imageFile = formData.get('imageFile') as File | null;
+        let imageUrl = existingCoupon.imageUrl;
+        if (imageFile && imageFile.size > 0) {
+            imageUrl = (await uploadImage(imageFile, 'coupons')) || existingCoupon.imageUrl;
+        }
 
         const rawData = {
             title: formData.get('title'),
