@@ -10,9 +10,15 @@ import { z } from 'zod';
 import { verifySession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
+import crypto from 'crypto';
+
+const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
+
 const CouponSchema = z.object({
     title: z.string().min(1, 'Title is required'),
-    code: z.string().optional(), // 'Code' might be empty if it's a 'Deal'
+    code: z.string().optional(),
     tagLine: z.string().optional(),
     description: z.string().optional(),
     storeId: z.string().min(1, 'Store is required'),
@@ -21,7 +27,7 @@ const CouponSchema = z.object({
     startDate: z.string().optional().or(z.literal('')),
     expiryDate: z.string().optional().or(z.literal('')),
     trackingLink: z.string().min(1, 'Tracking Link is required').url('Invalid URL'),
-    couponType: z.enum(['Code', 'Deal']),
+    couponType: z.enum(['Code', 'Deals', 'Exclusive', 'Freeshipping', 'Clearance']),
     isExclusive: z.boolean().optional(),
     isFeatured: z.boolean().optional(),
     isVerified: z.boolean().optional(),
@@ -30,61 +36,186 @@ const CouponSchema = z.object({
     seoTitle: z.string().optional(),
     seoDescription: z.string().optional(),
     imageUrl: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if (data.couponType === 'Code' && (!data.code || data.code.trim() === '')) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Coupon Code is required for type 'Code'",
+            path: ["code"],
+        });
+    }
 });
 
+async function handleFileUpload(imageFile: File | null) {
+    if (!imageFile || imageFile.size === 0) return null;
+    if (imageFile.size > MAX_FILE_SIZE) throw new Error('Image size exceeds 3MB limit');
+
+    const bytes = await imageFile.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const fileExtension = imageFile.name.split('.').pop();
+    const fileName = `${crypto.randomUUID()}.${fileExtension}`;
+    const uploadDir = join(process.cwd(), 'public', 'uploads', 'coupons');
+
+    try {
+        await mkdir(uploadDir, { recursive: true });
+        const path = join(uploadDir, fileName);
+        await writeFile(path, buffer);
+        return `/uploads/coupons/${fileName}`;
+    } catch (error) {
+        console.error('File upload error:', error);
+        throw new Error('Failed to upload image');
+    }
+}
+
 export async function createCoupon(prevState: any, formData: FormData) {
+    console.log("--- createCoupon Action Started ---");
+    const session = await verifySession();
+    if (!session.isAuth || (session.role !== 'ADMIN' && session.role !== 'EDITOR')) {
+        console.log("Auth failed");
+        return { message: 'Unauthorized' };
+    }
+
+    try {
+        console.log("Handling file upload...");
+        const imageUrl = await handleFileUpload(formData.get('imageFile') as File | null);
+        console.log("File upload result:", imageUrl);
+
+        // Prepare data handling checkboxes and selects
+        // HELPER: Convert null from formData to undefined for simple strings to satisfy Zod .optional()
+        const getString = (key: string) => {
+            const val = formData.get(key);
+            return (val && typeof val === 'string' && val.trim() !== '') ? val.trim() : undefined;
+        };
+
+        const rawData = {
+            title: formData.get('title'), // Required, let Zod catch if missing
+            code: getString('code') || '', // Special case: default to empty string if missing, handled by superRefine
+            tagLine: getString('tagLine'),
+            description: getString('description'),
+            storeId: formData.get('storeId'),
+            categoryId: formData.get('categoryId'),
+            subCategoryId: getString('subCategoryId'),
+            startDate: getString('startDate'), // If empty string, returns undefined
+            expiryDate: getString('expiryDate'),
+            trackingLink: getString('trackingLink'),
+            couponType: formData.get('couponType') as any,
+            isExclusive: formData.get('isExclusive') === 'yes',
+            isFeatured: formData.get('isFeatured') === 'yes',
+            isVerified: formData.get('isVerified') === 'yes',
+            isActive: formData.get('isActive') === 'enabled',
+            discountValue: getString('discountValue'),
+            seoTitle: getString('seoTitle'),
+            seoDescription: getString('seoDescription'),
+            imageUrl: imageUrl || undefined,
+        };
+        console.log("Raw Data:", JSON.stringify(rawData, null, 2));
+
+        const validatedFields = CouponSchema.safeParse(rawData);
+
+        if (!validatedFields.success) {
+            console.log("Validation Failed:", validatedFields.error.flatten().fieldErrors);
+            return { errors: validatedFields.error.flatten().fieldErrors, message: 'Validation Failed: Please check the highlighted fields.' };
+        }
+
+        console.log("Validation Success. Connecting to DB...");
+        const data = validatedFields.data;
+        await connectToDatabase();
+
+        console.log("Checking Store and Category...");
+        const store = await StoreModel.findById(data.storeId);
+        if (!store) {
+            console.log("Store not found:", data.storeId);
+            return { message: 'Selected store does not exist' };
+        }
+
+        const category = await CategoryModel.findById(data.categoryId);
+        if (!category) {
+            console.log("Category not found:", data.categoryId);
+            return { message: 'Selected category does not exist' };
+        }
+
+        console.log("Creating Coupon Document...");
+        const newCoupon = await Coupon.create({
+            title: data.title,
+            code: data.code,
+            tagLine: data.tagLine,
+            description: data.description,
+            store: data.storeId,
+            category: data.categoryId,
+            subCategory: data.subCategoryId || undefined,
+            startDate: data.startDate ? new Date(data.startDate) : undefined,
+            expiryDate: data.expiryDate ? new Date(data.expiryDate) : undefined,
+            trackingLink: data.trackingLink,
+            couponType: data.couponType,
+            isExclusive: data.isExclusive || false,
+            isFeatured: data.isFeatured || false,
+            isVerified: data.isVerified || false,
+            isActive: data.isActive || true,
+            discountValue: data.discountValue,
+            seoTitle: data.seoTitle,
+            seoDescription: data.seoDescription,
+            imageUrl: data.imageUrl,
+        });
+        console.log("Coupon Created Successfully:", newCoupon._id);
+
+        revalidatePath('/admin/coupons');
+    } catch (error: any) {
+        console.error("CRITICAL ERROR in createCoupon:", error);
+        return { message: error.message || 'Failed to create coupon' };
+    }
+
+    console.log("Redirecting...");
+    redirect('/admin/coupons');
+}
+
+export async function updateCoupon(prevState: any, formData: FormData) {
     const session = await verifySession();
     if (!session.isAuth || (session.role !== 'ADMIN' && session.role !== 'EDITOR')) {
         return { message: 'Unauthorized' };
     }
 
-    // Prepare data handling checkboxes and selects
-    const rawData = {
-        title: formData.get('title'),
-        code: formData.get('code') || '',
-        tagLine: formData.get('tagLine'),
-        description: formData.get('description'),
-        storeId: formData.get('storeId'),
-        categoryId: formData.get('categoryId'),
-        subCategoryId: formData.get('subCategoryId'),
-        startDate: formData.get('startDate'),
-        expiryDate: formData.get('expiryDate'),
-        trackingLink: formData.get('trackingLink'),
-        couponType: formData.get('couponType') as 'Code' | 'Deal', // Form sends "Code" or "Deal"
-        isExclusive: formData.get('isExclusive') === 'yes',
-        isFeatured: formData.get('isFeatured') === 'yes',
-        isVerified: formData.get('isVerified') === 'yes',
-        isActive: formData.get('isActive') === 'enabled',
-        discountValue: formData.get('discountValue'), // Might extract from title or manual input if added
-        seoTitle: formData.get('seoTitle'),
-        seoDescription: formData.get('seoDescription'),
-        imageUrl: formData.get('imageUrl'),
-    };
-
-    const validatedFields = CouponSchema.safeParse(rawData);
-
-    if (!validatedFields.success) {
-        return { errors: validatedFields.error.flatten().fieldErrors };
-    }
-
-    const data = validatedFields.data;
+    const id = formData.get('id') as string;
+    if (!id) return { message: 'Coupon ID is required' };
 
     try {
         await connectToDatabase();
+        const existingCoupon = await Coupon.findById(id);
+        if (!existingCoupon) return { message: 'Coupon not found' };
 
-        // Verify store exists
-        const store = await StoreModel.findById(data.storeId);
-        if (!store) {
-            return { message: 'Selected store does not exist' };
+        const imageUrl = await handleFileUpload(formData.get('imageFile') as File | null);
+
+        const rawData = {
+            title: formData.get('title'),
+            code: formData.get('code') || '',
+            tagLine: formData.get('tagLine'),
+            description: formData.get('description'),
+            storeId: formData.get('storeId'),
+            categoryId: formData.get('categoryId'),
+            subCategoryId: formData.get('subCategoryId'),
+            startDate: formData.get('startDate'),
+            expiryDate: formData.get('expiryDate'),
+            trackingLink: formData.get('trackingLink'),
+            couponType: formData.get('couponType') as any,
+            isExclusive: formData.get('isExclusive') === 'yes',
+            isFeatured: formData.get('isFeatured') === 'yes',
+            isVerified: formData.get('isVerified') === 'yes',
+            isActive: formData.get('isActive') === 'enabled',
+            discountValue: formData.get('discountValue'),
+            seoTitle: formData.get('seoTitle'),
+            seoDescription: formData.get('seoDescription'),
+            imageUrl: imageUrl || existingCoupon.imageUrl,
+        };
+
+        const validatedFields = CouponSchema.safeParse(rawData);
+
+        if (!validatedFields.success) {
+            return { errors: validatedFields.error.flatten().fieldErrors };
         }
 
-        // Verify category exists
-        const category = await CategoryModel.findById(data.categoryId);
-        if (!category) {
-            return { message: 'Selected category does not exist' };
-        }
+        const data = validatedFields.data;
 
-        await Coupon.create({
+        await Coupon.findByIdAndUpdate(id, {
             title: data.title,
             code: data.code,
             tagLine: data.tagLine,
@@ -107,9 +238,10 @@ export async function createCoupon(prevState: any, formData: FormData) {
         });
 
         revalidatePath('/admin/coupons');
-    } catch (error) {
+        revalidatePath(`/admin/coupons/edit/${id}`);
+    } catch (error: any) {
         console.error(error);
-        return { message: 'Failed to create coupon' };
+        return { message: error.message || 'Failed to update coupon' };
     }
 
     redirect('/admin/coupons');

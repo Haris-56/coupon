@@ -44,19 +44,19 @@ export function Sidebar() {
             {/* Mobile Trigger */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="md:hidden fixed top-4 left-4 z-50 bg-[#2c3e50] text-white p-2 rounded-md shadow-lg"
+                className="md:hidden fixed top-4 left-4 z-50 bg-secondary-900 text-white p-2 rounded-md shadow-lg"
             >
                 {isOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
 
             {/* Sidebar Container */}
             <div className={cn(
-                "fixed top-0 left-0 bottom-0 z-40 w-64 bg-[#2c3e50] text-white transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:h-full flex flex-col",
+                "fixed top-0 left-0 bottom-0 z-40 w-64 bg-secondary-900 text-white transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:h-full flex flex-col",
                 isOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
             )}>
-                <div className="p-6 border-b border-[#34495e] flex items-center gap-2 mt-12 md:mt-0">
+                <div className="p-6 border-b border-secondary-800 flex items-center gap-2 mt-12 md:mt-0">
                     <h1 className="text-xl font-bold tracking-wider italic flex items-center gap-2">
-                        <span className="bg-violet-600 px-2 py-1 rounded text-sm not-italic">CP</span>
+                        <span className="bg-primary-600 px-2 py-1 rounded text-sm not-italic">CP</span>
                         DASHBOARD<sup className="text-xs not-italic">®</sup>
                     </h1>
                 </div>
@@ -73,8 +73,8 @@ export function Sidebar() {
                                 className={cn(
                                     "flex items-center gap-3 px-6 py-3.5 transition-colors border-l-4",
                                     isActive
-                                        ? "bg-[#34495e] text-white border-violet-500"
-                                        : "text-slate-400 hover:bg-[#34495e] hover:text-white border-transparent hover:border-violet-500"
+                                        ? "bg-secondary-800 text-white border-primary-500"
+                                        : "text-secondary-400 hover:bg-secondary-800 hover:text-white border-transparent hover:border-primary-500"
                                 )}
                             >
                                 <Icon size={18} />
@@ -84,7 +84,7 @@ export function Sidebar() {
                     })}
                 </nav>
 
-                <div className="p-4 border-t border-[#34495e]">
+                <div className="p-4 border-t border-secondary-800">
                     <form action={logout}>
                         <button className="flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-300 w-full transition-colors text-sm font-medium">
                             <LogOut size={18} />

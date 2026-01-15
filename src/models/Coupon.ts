@@ -13,7 +13,7 @@ export interface ICoupon extends Document {
     startDate?: Date;
     expiryDate?: Date;
     trackingLink?: string;
-    couponType?: 'Code' | 'Deal';
+    couponType?: 'Code' | 'Deals' | 'Exclusive' | 'Freeshipping' | 'Clearance';
     isExclusive: boolean;
     isFeatured: boolean;
     isVerified: boolean; // "Verify" in screenshot
@@ -40,7 +40,7 @@ const CouponSchema: Schema = new Schema(
         startDate: { type: Date },
         expiryDate: { type: Date },
         trackingLink: { type: String },
-        couponType: { type: String, enum: ['Code', 'Deal'], default: 'Code' },
+        couponType: { type: String, enum: ['Code', 'Deals', 'Exclusive', 'Freeshipping', 'Clearance'], default: 'Code' },
         isExclusive: { type: Boolean, default: false },
         isFeatured: { type: Boolean, default: false },
         isVerified: { type: Boolean, default: true },

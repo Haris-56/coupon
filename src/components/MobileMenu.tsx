@@ -62,36 +62,36 @@ export function MobileMenu({ isAuth, role }: MobileMenuProps) {
                     {/* Close Button */}
                     <button
                         onClick={() => setIsOpen(false)}
-                        className="absolute top-4 right-4 p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"
+                        className="absolute top-4 right-4 p-1 text-secondary-400 hover:text-secondary-600 rounded-full hover:bg-secondary-100"
                     >
                         <X size={20} />
                     </button>
 
                     {/* Logo */}
                     <Link href="/" onClick={() => setIsOpen(false)} className="flex flex-col items-center gap-2 mb-6 mt-4">
-                        <div className="bg-violet-600 text-white p-3 rounded-2xl shadow-violet-200 shadow-lg">
+                        <div className="bg-primary-600 text-white p-3 rounded-2xl shadow-primary-200 shadow-lg">
                             <span className="font-bold text-2xl">CP</span>
                         </div>
                         <div className="text-center">
-                            <span className="font-extrabold text-xl text-slate-800 block leading-none">CouponPro</span>
-                            <span className="text-xs text-slate-500 font-medium tracking-wider uppercase">Hub</span>
+                            <span className="font-extrabold text-xl text-secondary-900 block leading-none">CouponPro</span>
+                            <span className="text-xs text-secondary-500 font-medium tracking-wider uppercase">Hub</span>
                         </div>
                     </Link>
                 </div>
 
                 {/* Profile Section */}
-                <div className="p-6 border-b border-slate-100">
+                <div className="p-6 border-b border-secondary-100">
                     {isAuth ? (
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                            <div className="w-12 h-12 rounded-full bg-secondary-100 flex items-center justify-center text-secondary-400">
                                 <User size={24} />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="font-bold text-slate-800 truncate">Admin</p>
+                                <p className="font-bold text-secondary-900 truncate">Admin</p>
                                 <Link
                                     href="/admin"
                                     onClick={() => setIsOpen(false)}
-                                    className="text-xs text-slate-400 hover:text-violet-600 transition-colors flex items-center gap-1"
+                                    className="text-xs text-secondary-500 hover:text-primary-600 transition-colors flex items-center gap-1"
                                 >
                                     View Profile <ChevronRight size={10} />
                                 </Link>
@@ -99,10 +99,10 @@ export function MobileMenu({ isAuth, role }: MobileMenuProps) {
                         </div>
                     ) : (
                         <div className="flex flex-col gap-3">
-                            <Link href="/login" onClick={() => setIsOpen(false)} className="w-full py-2.5 px-4 bg-slate-100 text-slate-700 font-bold rounded-lg text-center hover:bg-slate-200 transition-colors">
+                            <Link href="/login" onClick={() => setIsOpen(false)} className="w-full py-2.5 px-4 bg-secondary-100 text-secondary-700 font-bold rounded-lg text-center hover:bg-secondary-200 transition-colors">
                                 Log In
                             </Link>
-                            <Link href="/signup" onClick={() => setIsOpen(false)} className="w-full py-2.5 px-4 bg-violet-600 text-white font-bold rounded-lg text-center hover:bg-violet-700 transition-colors shadow-md shadow-violet-200">
+                            <Link href="/signup" onClick={() => setIsOpen(false)} className="w-full py-2.5 px-4 bg-primary-600 text-white font-bold rounded-lg text-center hover:bg-primary-700 transition-colors shadow-md shadow-primary-200">
                                 Sign Up
                             </Link>
                         </div>
@@ -122,13 +122,13 @@ export function MobileMenu({ isAuth, role }: MobileMenuProps) {
                             href={item.href}
                             onClick={() => setIsOpen(false)}
                             className={cn(
-                                "flex items-center gap-3 px-4 py-3 rounded-lg font-bold text-slate-700 hover:bg-slate-50 transition-all group",
-                                pathname === item.href && "bg-violet-50 text-violet-600"
+                                "flex items-center gap-3 px-4 py-3 rounded-lg font-bold text-secondary-700 hover:bg-secondary-50 transition-all group",
+                                pathname === item.href && "bg-primary-50 text-primary-600"
                             )}
                         >
                             <span className={cn(
-                                "w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-violet-400 transition-colors",
-                                pathname === item.href && "bg-violet-600"
+                                "w-1.5 h-1.5 rounded-full bg-secondary-300 group-hover:bg-primary-400 transition-colors",
+                                pathname === item.href && "bg-primary-600"
                             )}></span>
 
                             <span className="text-lg">{item.label}</span>
@@ -161,7 +161,7 @@ export function MobileMenu({ isAuth, role }: MobileMenuProps) {
                             <Link
                                 key={idx}
                                 href={href}
-                                className="w-10 h-10 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 hover:text-violet-600 hover:border-violet-200 hover:bg-violet-50 transition-all"
+                                className="w-10 h-10 border border-secondary-200 rounded-lg flex items-center justify-center text-secondary-400 hover:text-primary-600 hover:border-primary-200 hover:bg-primary-50 transition-all"
                             >
                                 <Icon size={18} />
                             </Link>

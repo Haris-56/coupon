@@ -31,7 +31,7 @@ export default async function StoresPage(props: { searchParams: Promise<{ char?:
     return (
         <div className="bg-slate-50 min-h-screen pb-20">
             {/* Header */}
-            <div className="bg-blue-600 py-12">
+            <div className="bg-primary-600 py-12">
                 <div className="container mx-auto px-4">
                     <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Stores</h1>
                     <div className="h-1 w-16 bg-white rounded-full"></div>
@@ -46,9 +46,9 @@ export default async function StoresPage(props: { searchParams: Promise<{ char?:
                         <input
                             type="text"
                             placeholder="Search your favorite store..."
-                            className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-full focus:outline-none focus:border-blue-500 transition-all"
+                            className="w-full pl-12 pr-4 py-3 border border-secondary-200 rounded-full focus:outline-none focus:border-primary-500 transition-all font-medium text-secondary-800"
                         />
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary-400" size={20} />
                     </div>
 
                     {/* A-Z Filter */}
@@ -58,8 +58,8 @@ export default async function StoresPage(props: { searchParams: Promise<{ char?:
                             className={cn(
                                 "w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold transition-all",
                                 !selectedChar
-                                    ? "bg-blue-600 text-white shadow-md"
-                                    : "bg-slate-100 text-slate-600 hover:bg-white hover:shadow-md"
+                                    ? "bg-primary-600 text-white shadow-md"
+                                    : "bg-secondary-100 text-secondary-600 hover:bg-white hover:shadow-md hover:text-primary-600"
                             )}
                         >
                             ALL
@@ -71,8 +71,8 @@ export default async function StoresPage(props: { searchParams: Promise<{ char?:
                                 className={cn(
                                     "w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold transition-all",
                                     selectedChar === char
-                                        ? "bg-blue-600 text-white shadow-md"
-                                        : "bg-slate-100 text-slate-600 hover:bg-white hover:shadow-md"
+                                        ? "bg-primary-600 text-white shadow-md"
+                                        : "bg-secondary-100 text-secondary-600 hover:bg-white hover:shadow-md hover:text-primary-600"
                                 )}
                             >
                                 {char}
@@ -87,7 +87,7 @@ export default async function StoresPage(props: { searchParams: Promise<{ char?:
                         {/* Group by Letter just for visuals, or just list them if filtered */}
                         {selectedChar ? (
                             <div>
-                                <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-2">{selectedChar}</h2>
+                                <h2 className="text-2xl font-bold text-secondary-800 mb-6 border-b border-secondary-100 pb-2">{selectedChar}</h2>
                                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                                     {filteredStores.map((store: any) => (
                                         <Link
@@ -95,13 +95,13 @@ export default async function StoresPage(props: { searchParams: Promise<{ char?:
                                             key={store._id}
                                             className="flex items-center gap-3 group"
                                         >
-                                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                            <div className="w-8 h-8 rounded-full bg-secondary-100 flex items-center justify-center text-xs font-bold text-secondary-500 group-hover:bg-primary-600 group-hover:text-white transition-colors">
                                                 {store.logoUrl ? <img src={store.logoUrl} className="w-full h-full object-cover rounded-full" /> : store.name.charAt(0)}
                                             </div>
-                                            <span className="text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">{store.name}</span>
+                                            <span className="text-sm font-medium text-secondary-600 group-hover:text-primary-600 transition-colors">{store.name}</span>
                                         </Link>
                                     ))}
-                                    {filteredStores.length === 0 && <p className="text-slate-400 italic">No stores found.</p>}
+                                    {filteredStores.length === 0 && <p className="text-secondary-400 italic">No stores found.</p>}
                                 </div>
                             </div>
                         ) : (
@@ -111,7 +111,7 @@ export default async function StoresPage(props: { searchParams: Promise<{ char?:
                                 if (charStores.length === 0) return null;
                                 return (
                                     <div key={char}>
-                                        <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-2">{char}</h2>
+                                        <h2 className="text-2xl font-bold text-secondary-800 mb-6 border-b border-secondary-100 pb-2">{char}</h2>
                                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                                             {charStores.map((store: any) => (
                                                 <Link
@@ -119,10 +119,10 @@ export default async function StoresPage(props: { searchParams: Promise<{ char?:
                                                     key={store._id}
                                                     className="flex items-center gap-3 group"
                                                 >
-                                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                    <div className="w-8 h-8 rounded-full bg-secondary-100 flex items-center justify-center text-xs font-bold text-secondary-500 group-hover:bg-primary-600 group-hover:text-white transition-colors">
                                                         {store.logoUrl ? <img src={store.logoUrl} className="w-full h-full object-cover rounded-full" /> : store.name.charAt(0)}
                                                     </div>
-                                                    <span className="text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">{store.name}</span>
+                                                    <span className="text-sm font-medium text-secondary-600 group-hover:text-primary-600 transition-colors">{store.name}</span>
                                                 </Link>
                                             ))}
                                         </div>

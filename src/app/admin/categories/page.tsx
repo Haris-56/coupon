@@ -1,52 +1,97 @@
 
 import { connectToDatabase } from '@/lib/db';
 import Category from '@/models/Category';
-import { Search } from 'lucide-react';
+import { Search, Plus, Tag } from 'lucide-react';
+import Link from 'next/link';
+import { AdminActionMenu } from '@/components/admin/AdminActionMenu';
+import { deleteCategory } from '@/actions/category';
 
 export const dynamic = 'force-dynamic';
 
-async function getCategories() {
+async function getCategories(searchQuery?: string) {
     await connectToDatabase();
-    const categories = await Category.find().sort({ createdAt: -1 });
+    let query = {};
+    if (searchQuery) {
+        query = {
+            $or: [
+                { name: { $regex: searchQuery, $options: 'i' } },
+                { slug: { $regex: searchQuery, $options: 'i' } }
+            ]
+        };
+    }
+    const categories = await Category.find(query).sort({ createdAt: -1 });
     return JSON.parse(JSON.stringify(categories));
 }
 
-export default async function CategoriesPage() {
-    const categories = await getCategories();
+export default async function CategoriesPage({ searchParams }: { searchParams: any }) {
+    const q = searchParams?.q || '';
+    const categories = await getCategories(q);
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-slate-800">Categories</h1>
-                <button disabled className="bg-slate-200 text-slate-500 px-4 py-2 rounded-lg font-medium cursor-not-allowed">
-                    Add Category (Coming Soon)
-                </button>
+                <h1 className="text-2xl font-bold text-secondary-900">Categories</h1>
+                <Link
+                    href="/admin/categories/create"
+                    className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                    <Plus size={18} />
+                    Add Category
+                </Link>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <div className="p-4 border-b border-slate-100 flex items-center gap-4 bg-slate-50/50">
-                    <div className="relative flex-1 max-w-sm">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                        <input placeholder="Search..." className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm" />
+            <div className="bg-white border border-secondary-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="p-4 border-b border-secondary-100 flex items-center gap-4 bg-secondary-50/50">
+                    <form className="relative flex-1 max-w-sm">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-400" size={18} />
+                        <input
+                            name="q"
+                            defaultValue={q}
+                            placeholder="Search categories..."
+                            className="w-full pl-10 pr-4 py-2 border border-secondary-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                        />
+                    </form>
+                    <div className="text-sm text-secondary-500">
+                        Total: <span className="font-bold text-secondary-900">{categories.length}</span>
                     </div>
                 </div>
-                <table className="w-full text-left text-sm text-slate-600">
-                    <thead className="bg-slate-50 border-b border-slate-200">
-                        <tr>
-                            <th className="px-6 py-4">Name</th>
-                            <th className="px-6 py-4">Slug</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                        {categories.map((cat: any) => (
-                            <tr key={cat._id}>
-                                <td className="px-6 py-4 font-medium">{cat.name}</td>
-                                <td className="px-6 py-4 font-mono text-xs">{cat.slug}</td>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm text-secondary-600">
+                        <thead className="bg-secondary-50 text-secondary-700 font-semibold uppercase text-xs border-b border-secondary-200">
+                            <tr>
+                                <th className="px-6 py-4">Name</th>
+                                <th className="px-6 py-4">Slug</th>
+                                <th className="px-6 py-4 text-right">Actions</th>
                             </tr>
-                        ))}
-                        {categories.length === 0 && <tr><td colSpan={2} className="px-6 py-8 text-center text-slate-400">No categories found.</td></tr>}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-secondary-100">
+                            {categories.map((cat: any) => (
+                                <tr key={cat._id} className="hover:bg-secondary-50/50 transition-colors group">
+                                    <td className="px-6 py-4 font-medium text-secondary-900">{cat.name}</td>
+                                    <td className="px-6 py-4 font-mono text-xs text-secondary-500">{cat.slug}</td>
+                                    <td className="px-6 py-4 text-right">
+                                        <AdminActionMenu
+                                            editUrl={`/admin/categories/${cat._id}/edit`}
+                                            onDelete={async () => {
+                                                'use server';
+                                                return await deleteCategory(cat._id);
+                                            }}
+                                            itemName="category"
+                                        />
+                                    </td>
+                                </tr>
+                            ))}
+                            {categories.length === 0 && (
+                                <tr>
+                                    <td colSpan={3} className="px-6 py-12 text-center text-secondary-400">
+                                        <Tag className="mx-auto mb-2 opacity-50" />
+                                        No categories found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

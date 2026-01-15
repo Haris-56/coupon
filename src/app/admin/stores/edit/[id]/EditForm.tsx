@@ -1,19 +1,20 @@
 'use client';
 
 import { useActionState, useState, useRef } from 'react';
-import { createCategory } from '@/actions/category';
+import { updateStore } from '@/actions/store';
 import { ArrowLeft, Save, Upload, AlertCircle, X } from 'lucide-react';
 import Link from 'next/link';
+import { CountrySelect } from '@/components/admin/CountrySelect';
 
 const initialState = {
     message: '',
     errors: {} as Record<string, string[]>,
 };
 
-export default function ClientForm() {
+export default function EditForm({ store }: { store: any }) {
     // @ts-ignore
-    const [state, formAction] = useActionState(createCategory, initialState);
-    const [preview, setPreview] = useState<string | null>(null);
+    const [state, formAction] = useActionState(updateStore, initialState);
+    const [preview, setPreview] = useState<string | null>(store.logoUrl || null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,18 +35,20 @@ export default function ClientForm() {
 
     return (
         <form action={formAction} className="pb-20">
+            <input type="hidden" name="id" value={store._id} />
+
             <div className="flex items-center gap-4 mb-6">
-                <Link href="/admin/categories" className="bg-white border border-secondary-200 p-2 rounded-full hover:bg-secondary-50 text-secondary-500 transition-all shadow-sm">
+                <Link href="/admin/stores" className="bg-white border border-secondary-200 p-2 rounded-full hover:bg-secondary-50 text-secondary-500 transition-all shadow-sm">
                     <ArrowLeft size={20} />
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold text-secondary-900">Add New Category</h1>
+                    <h1 className="text-2xl font-bold text-secondary-900">Edit Store</h1>
                     <div className="h-1 w-10 bg-primary-600 rounded-full mt-1"></div>
                 </div>
             </div>
 
             {state?.message && (
-                <div className="p-4 rounded-lg mb-6 flex items-center gap-2 border bg-red-50 text-red-600 border-red-100">
+                <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 flex items-center gap-2 border border-red-100">
                     <AlertCircle size={20} />
                     {state.message}
                 </div>
@@ -62,17 +65,19 @@ export default function ClientForm() {
                                 name="name"
                                 type="text"
                                 required
+                                defaultValue={store.name}
                                 className="w-full px-4 py-2.5 border border-secondary-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
                             />
                             {state?.errors?.name && <p className="text-red-500 text-xs mt-1">{state.errors.name[0]}</p>}
                         </div>
 
-                        {/* Slug - Auto/Optional */}
+                        {/* Slug */}
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-secondary-500 uppercase">Slug <span className="text-secondary-400 font-normal normal-case">(Auto-generated if empty)</span></label>
+                            <label className="text-xs font-bold text-secondary-500 uppercase">Slug</label>
                             <input
                                 name="slug"
                                 type="text"
+                                defaultValue={store.slug}
                                 placeholder="custom-slug-url"
                                 className="w-full px-4 py-2.5 border border-secondary-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all font-mono bg-white"
                             />
@@ -84,44 +89,75 @@ export default function ClientForm() {
                             <label className="text-xs font-bold text-secondary-500 uppercase">Description</label>
                             <textarea
                                 name="description"
-                                rows={4}
+                                rows={6}
+                                defaultValue={store.description}
                                 className="w-full px-4 py-2.5 border border-secondary-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
                             />
                         </div>
 
-                        {/* Icon Selector */}
+                        {/* Tracking Link */}
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-secondary-500 uppercase flex items-center justify-between">
-                                Icon
-                                <span className="text-[10px] text-primary-500 font-normal normal-case cursor-pointer hover:underline">FontAwesome Class</span>
-                            </label>
+                            <label className="text-xs font-bold text-secondary-500 uppercase">Tracking Link</label>
                             <input
-                                name="icon"
-                                type="text"
-                                className="w-full px-4 py-2.5 border border-secondary-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
-                                placeholder="fa-solid fa-home"
+                                name="affiliateLink"
+                                type="url"
+                                defaultValue={store.affiliateLink}
+                                placeholder="https://..."
+                                className="w-full px-4 py-2.5 border border-secondary-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white font-mono"
                             />
                         </div>
 
-                        {/* Toggles */}
+                        {/* URL/Link */}
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-secondary-500 uppercase">Store URL</label>
+                            <input
+                                name="url"
+                                type="url"
+                                defaultValue={store.url}
+                                placeholder="https://store.com"
+                                className="w-full px-4 py-2.5 border border-secondary-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white font-mono"
+                            />
+                        </div>
+
+                        {/* Network & Country */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-secondary-500 uppercase">Show in Menu</label>
-                                <select name="isShowInMenu" className="w-full px-4 py-2.5 bg-white border border-secondary-200 rounded-lg text-sm text-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all shadow-sm">
-                                    <option value="no">No</option>
-                                    <option value="yes">Yes</option>
-                                </select>
+                                <label className="text-xs font-bold text-secondary-500 uppercase">Country</label>
+                                <CountrySelect name="country" defaultValue={store.country || 'Global'} />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-secondary-500 uppercase">Featured</label>
-                                <select name="isFeatured" className="w-full px-4 py-2.5 bg-white border border-secondary-200 rounded-lg text-sm text-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all shadow-sm">
-                                    <option value="no">No</option>
-                                    <option value="yes">Yes</option>
+                                <label className="text-xs font-bold text-secondary-500 uppercase">Network</label>
+                                <select
+                                    name="network"
+                                    defaultValue={store.network || ''}
+                                    className="w-full px-4 py-2.5 bg-white border border-secondary-200 rounded-lg text-sm text-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all shadow-sm"
+                                >
+                                    <option value="">Other / None</option>
+                                    <option value="Impact">Impact</option>
+                                    <option value="CJ">CJ Affiliate</option>
+                                    <option value="Awin">Awin</option>
+                                    <option value="Rakuten">Rakuten</option>
+                                    <option value="ShareASale">ShareASale</option>
+                                    <option value="FlexOffers">FlexOffers</option>
+                                    <option value="Partnerize">Partnerize</option>
                                 </select>
                             </div>
                         </div>
 
-                        {/* SEO Divider */}
+                        {/* Featured */}
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-secondary-500 uppercase">Featured</label>
+                            <select
+                                name="isFeatured"
+                                defaultValue={store.isFeatured ? 'yes' : 'no'}
+                                className="w-full px-4 py-2.5 bg-white border border-secondary-200 rounded-lg text-sm text-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all shadow-sm"
+                            >
+                                <option value="no">No</option>
+                                <option value="yes">Yes (Featured Section)</option>
+                            </select>
+                        </div>
+
+                        {/* SEO Section */}
                         <div className="relative pt-4">
                             <div className="absolute inset-0 flex items-center" aria-hidden="true">
                                 <div className="w-full border-t border-secondary-200"></div>
@@ -131,21 +167,22 @@ export default function ClientForm() {
                             </div>
                         </div>
 
-                        {/* SEO Fields */}
                         <div className="space-y-4">
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-secondary-500 uppercase">Meta Title</label>
+                                <label className="text-xs font-bold text-secondary-500 uppercase">SEO Title</label>
                                 <input
                                     name="seoTitle"
                                     type="text"
+                                    defaultValue={store.seoTitle}
                                     className="w-full px-4 py-2.5 border border-secondary-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-secondary-500 uppercase">Meta Description</label>
+                                <label className="text-xs font-bold text-secondary-500 uppercase">SEO Description</label>
                                 <textarea
                                     name="seoDescription"
                                     rows={3}
+                                    defaultValue={store.seoDescription}
                                     className="w-full px-4 py-2.5 border border-secondary-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all bg-white"
                                 />
                             </div>
@@ -157,14 +194,18 @@ export default function ClientForm() {
                 <div className="space-y-6">
                     <div className="bg-white border border-secondary-200 rounded-xl shadow-sm p-5 space-y-4">
                         <h3 className="text-sm font-bold text-secondary-700">Display Status</h3>
-                        <select name="isActive" className="w-full px-4 py-2.5 bg-white border border-secondary-200 rounded-lg text-sm text-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all shadow-sm">
+                        <select
+                            name="isActive"
+                            defaultValue={store.isActive ? 'enabled' : 'disabled'}
+                            className="w-full px-4 py-2.5 bg-white border border-secondary-200 rounded-lg text-sm text-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all shadow-sm"
+                        >
                             <option value="enabled">Enabled (Public)</option>
                             <option value="disabled">Disabled (Private)</option>
                         </select>
                     </div>
 
                     <div className="bg-white border border-secondary-200 rounded-xl shadow-sm p-5 space-y-4">
-                        <h3 className="text-sm font-bold text-secondary-700">Image <span className="text-red-500">*</span></h3>
+                        <h3 className="text-sm font-bold text-secondary-700">Image / Logo</h3>
 
                         <div
                             className="bg-secondary-50 border-2 border-dashed border-secondary-200 rounded-xl p-6 flex flex-col items-center justify-center text-center relative group cursor-pointer hover:border-primary-400 hover:bg-primary-50/30 transition-all"
@@ -192,7 +233,7 @@ export default function ClientForm() {
                             )}
                             <input
                                 ref={fileInputRef}
-                                name="image"
+                                name="imageFile"
                                 type="file"
                                 accept="image/*"
                                 className="hidden"
@@ -204,7 +245,7 @@ export default function ClientForm() {
 
                     <button type="submit" className="w-full bg-primary-600 hover:bg-primary-700 text-white py-3.5 rounded-lg font-bold text-sm uppercase tracking-wider transition-all shadow-lg shadow-primary-200 active:scale-95 flex items-center justify-center gap-2">
                         <Save size={18} />
-                        Save Category
+                        Update Store
                     </button>
                 </div>
             </div>
