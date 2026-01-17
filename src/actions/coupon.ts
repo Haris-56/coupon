@@ -248,3 +248,14 @@ export async function deleteCoupon(id: string) {
         return { message: 'Error deleting coupon' };
     }
 }
+
+export async function voteCoupon(id: string, isUp: boolean) {
+    try {
+        await connectToDatabase();
+        const update = isUp ? { $inc: { votesUp: 1 } } : { $inc: { votesDown: 1 } };
+        await Coupon.findByIdAndUpdate(id, update);
+        return { success: true };
+    } catch (error) {
+        return { success: false };
+    }
+}

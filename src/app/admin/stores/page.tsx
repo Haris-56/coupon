@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { Plus, Search, ExternalLink } from 'lucide-react';
+import { Plus, Search, ExternalLink, Store } from 'lucide-react';
 import { connectToDatabase } from '@/lib/db';
 import StoreModel from '@/models/Store';
 import { StoresClientConfig } from './client';
@@ -9,7 +9,7 @@ import { deleteStore } from '@/actions/store';
 
 export const dynamic = 'force-dynamic';
 
-async function getStores(searchQuery?: string) {
+async function getStores(searchQuery?: string, page: number = 1, limit: number = 10) {
     await connectToDatabase();
     let query = {};
     if (searchQuery) {
@@ -20,14 +20,27 @@ async function getStores(searchQuery?: string) {
             ]
         };
     }
-    const stores = await StoreModel.find(query).sort({ createdAt: -1 });
-    return JSON.parse(JSON.stringify(stores));
+    const skip = (page - 1) * limit;
+    const [stores, total] = await Promise.all([
+        StoreModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+        StoreModel.countDocuments(query)
+    ]);
+
+    return {
+        stores: JSON.parse(JSON.stringify(stores)),
+        total,
+        page,
+        totalPages: Math.ceil(total / limit)
+    };
 }
 
-export default async function StoresPage(props: { searchParams: Promise<{ q?: string }> }) {
+export default async function StoresPage(props: { searchParams: Promise<{ q?: string, page?: string }> }) {
     const searchParams = await props.searchParams;
     const q = searchParams?.q || '';
-    const stores = await getStores(q);
+    const page = parseInt(searchParams?.page || '1');
+    const limit = 10;
+
+    const { stores, total, totalPages } = await getStores(q, page, limit);
 
     return (
         <div className="space-y-6">
@@ -49,8 +62,8 @@ export default async function StoresPage(props: { searchParams: Promise<{ q?: st
                         />
                     </form>
 
-                    <div className="text-sm text-secondary-500">
-                        Total: <span className="font-bold text-secondary-900">{stores.length}</span>
+                    <div className="text-sm text-secondary-500 ml-auto">
+                        Total: <span className="font-bold text-secondary-900">{total}</span>
                     </div>
                 </div>
 
@@ -73,7 +86,7 @@ export default async function StoresPage(props: { searchParams: Promise<{ q?: st
                             {stores.map((store: any, index: number) => (
                                 <tr key={store._id} className="hover:bg-secondary-50/50 transition-colors group">
                                     <td className="px-6 py-4 text-secondary-400 font-mono text-xs">
-                                        {index + 1}
+                                        #{(page - 1) * limit + index + 1}
                                     </td>
                                     <td className="px-6 py-4">
                                         {store.logoUrl ? (
@@ -119,12 +132,48 @@ export default async function StoresPage(props: { searchParams: Promise<{ q?: st
                             {stores.length === 0 && (
                                 <tr>
                                     <td colSpan={8} className="px-6 py-12 text-center text-secondary-400">
+                                        <Store className="mx-auto mb-2 opacity-50" />
                                         No stores found.
                                     </td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="p-4 border-t border-secondary-100 flex items-center justify-between text-sm text-secondary-500 bg-secondary-50/30">
+                    <span>Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} entries</span>
+                    <div className="flex gap-1">
+                        <Link
+                            href={`/admin/stores?page=1&q=${q}`}
+                            className={`px-3 py-1 border border-secondary-200 rounded bg-white hover:bg-secondary-50 ${page === 1 ? 'pointer-events-none opacity-50' : ''}`}
+                        >
+                            First
+                        </Link>
+                        {[...Array(totalPages)].map((_, i) => {
+                            const p = i + 1;
+                            if (totalPages > 5 && Math.abs(p - page) > 1 && p !== 1 && p !== totalPages) {
+                                if (p === 2 || p === totalPages - 1) return <span key={p} className="px-2">...</span>;
+                                return null;
+                            }
+                            return (
+                                <Link
+                                    key={p}
+                                    href={`/admin/stores?page=${p}&q=${q}`}
+                                    className={`px-3 py-1 border border-secondary-200 rounded ${page === p ? 'bg-primary-600 text-white border-primary-600' : 'bg-white hover:bg-secondary-50'}`}
+                                >
+                                    {p}
+                                </Link>
+                            );
+                        })}
+                        <Link
+                            href={`/admin/stores?page=${Math.min(totalPages, page + 1)}&q=${q}`}
+                            className={`px-3 py-1 border border-secondary-200 rounded bg-white hover:bg-secondary-50 ${page === totalPages || totalPages === 0 ? 'pointer-events-none opacity-50' : ''}`}
+                        >
+                            Next
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>

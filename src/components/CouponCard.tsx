@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { Copy, Check, ExternalLink, X, Scissors } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { voteCoupon } from '@/actions/coupon';
 import Link from 'next/link';
 
 interface CouponCardProps {
@@ -14,6 +15,7 @@ interface CouponCardProps {
 export function CouponCard({ coupon, layout = 'vertical' }: CouponCardProps) {
     const [copied, setCopied] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [hasVoted, setHasVoted] = useState(false);
 
     const handleCopy = (e?: React.MouseEvent) => {
         e?.stopPropagation();
@@ -26,17 +28,14 @@ export function CouponCard({ coupon, layout = 'vertical' }: CouponCardProps) {
 
     const handleAction = (e: React.MouseEvent) => {
         e.preventDefault();
+        // Show modal for all types, let the user click "Go to Deal" in the modal
+        setShowModal(true);
+    };
 
-        // Open Link
-        const url = coupon.trackingLink || coupon.store?.affiliateLink;
-        if (url) {
-            window.open(url, '_blank');
-        }
-
-        // If Code, show modal
-        if (coupon.couponType === 'Code') {
-            setShowModal(true);
-        }
+    const handleVote = async (isUp: boolean) => {
+        if (hasVoted) return;
+        setHasVoted(true);
+        await voteCoupon(coupon._id, isUp);
     };
 
     const closeModal = (e?: React.MouseEvent) => {
@@ -67,36 +66,81 @@ export function CouponCard({ coupon, layout = 'vertical' }: CouponCardProps) {
                                 <span className="font-bold text-secondary-400 text-xl">{coupon.store?.name?.substring(0, 1)}</span>
                             )}
                         </div>
-                        <h3 className="text-lg font-bold text-secondary-800">{coupon.store?.name}</h3>
-                        <p className="text-secondary-500 text-sm mt-1">{coupon.title}</p>
+                        <h3 className="text-lg font-bold text-secondary-800 break-words w-full px-4">{coupon.title}</h3>
+                        <p className="text-secondary-500 text-sm mt-1">at {coupon.store?.name}</p>
                     </div>
 
                     {/* Body */}
                     <div className="p-8 flex flex-col items-center gap-6">
-                        <div className="text-center space-y-2">
-                            <p className="text-sm font-semibold text-secondary-500 uppercase tracking-wide">Copy your code</p>
-                            <div className="relative group cursor-pointer" onClick={handleCopy}>
-                                <div className="bg-secondary-50 border-2 border-dashed border-secondary-300 rounded-xl px-8 py-4 flex items-center gap-4 min-w-[240px] justify-center hover:border-primary-400 hover:bg-primary-50/10 transition-all">
-                                    <span className="text-2xl font-mono font-bold text-primary-600 tracking-wider select-all">{coupon.code}</span>
-                                    {copied ? <Check className="text-green-500" size={24} /> : <Copy className="text-secondary-400 group-hover:text-primary-500" size={24} />}
+                        {coupon.couponType === 'Code' ? (
+                            <div className="text-center space-y-2 w-full text-center">
+                                <p className="text-sm font-semibold text-secondary-500 uppercase tracking-wide">Copy and paste this code at {coupon.store?.name}</p>
+                                <div className="relative group cursor-pointer" onClick={handleCopy}>
+                                    <div className="bg-secondary-50 border-2 border-dashed border-secondary-300 rounded-xl px-8 py-4 flex items-center gap-4 min-w-[240px] justify-center hover:border-primary-400 hover:bg-primary-50/10 transition-all">
+                                        <span className="text-2xl font-mono font-bold text-primary-600 tracking-wider select-all">{coupon.code}</span>
+                                        <button className="bg-primary-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold ml-2">Copy</button>
+                                    </div>
+                                    {copied && <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-green-600 font-bold animate-in fade-in slide-in-from-bottom-1">Copied!</span>}
                                 </div>
-                                {copied && <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-green-600 font-bold animate-in fade-in slide-in-from-bottom-1">Copied!</span>}
+                                <div className="pt-4">
+                                    <a
+                                        href={coupon.trackingLink || coupon.store?.affiliateLink || '#'}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-block w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-primary-200 transition-all active:scale-95 text-center"
+                                    >
+                                        Go to {coupon.store?.name}
+                                    </a>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-center space-y-4 w-full text-center">
+                                <p className="text-secondary-600 font-medium px-4">No code required! The discount will be automatically applied when you click the button below.</p>
+                                <a
+                                    href={coupon.trackingLink || coupon.store?.affiliateLink || '#'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-block w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-primary-200 transition-all active:scale-95 text-center"
+                                >
+                                    Go to Deal
+                                </a>
+                            </div>
+                        )}
+
+                        {/* Did it work? */}
+                        <div className="flex flex-col items-center gap-3 pt-4 border-t border-secondary-100 w-full">
+                            <p className="text-sm font-medium text-secondary-500">
+                                {hasVoted ? 'Thanks for your feedback!' : 'Did it work?'}
+                            </p>
+                            <div className="flex gap-4">
+                                <button
+                                    disabled={hasVoted}
+                                    onClick={() => handleVote(false)}
+                                    className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-full border transition-all group",
+                                        hasVoted ? "opacity-50 cursor-default border-secondary-200" : "border-secondary-200 hover:bg-red-50 hover:border-red-200"
+                                    )}
+                                >
+                                    <span className="text-2xl group-hover:scale-110 transition-transform">🙁</span>
+                                    <span className="text-sm font-bold text-secondary-600 group-hover:text-red-600">No</span>
+                                </button>
+                                <button
+                                    disabled={hasVoted}
+                                    onClick={() => handleVote(true)}
+                                    className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-full border transition-all group",
+                                        hasVoted ? "opacity-50 cursor-default border-secondary-200" : "border-secondary-200 hover:bg-green-50 hover:border-green-200"
+                                    )}
+                                >
+                                    <span className="text-2xl group-hover:scale-110 transition-transform">😊</span>
+                                    <span className="text-sm font-bold text-secondary-600 group-hover:text-green-600">Yes</span>
+                                </button>
                             </div>
                         </div>
 
-                        <div className="w-full text-center">
-                            <a
-                                href={coupon.trackingLink || coupon.store?.affiliateLink || '#'}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-block w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-primary-200 transition-all active:scale-95"
-                            >
-                                Shop at {coupon.store?.name}
-                            </a>
-                            <button onClick={closeModal} className="mt-4 text-sm text-secondary-400 hover:text-secondary-600 hover:underline">
-                                Continue to website
-                            </button>
-                        </div>
+                        <button onClick={closeModal} className="text-sm text-secondary-400 hover:text-secondary-600 hover:underline">
+                            Close and continue to {coupon.store?.name}
+                        </button>
                     </div>
                 </div>
             </div>

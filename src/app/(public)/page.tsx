@@ -4,7 +4,7 @@ import Coupon from '@/models/Coupon';
 import StoreModel from '@/models/Store';
 import Category from '@/models/Category';
 import { CouponCard } from '@/components/CouponCard';
-import { Search } from 'lucide-react';
+import { Search, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import SearchForm from '@/components/SearchForm';
 
@@ -42,14 +42,26 @@ export default async function HomePage() {
                 </div>
 
                 <div className="container mx-auto px-4 relative z-10 text-center">
-                    <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight drop-shadow-sm">
-                        Shop Today's Trending <span className="text-primary-500">Coupons</span> and Save Big
+                    <h1 className="text-4xl md:text-7xl font-extrabold text-white mb-6 tracking-tight drop-shadow-sm leading-tight">
+                        Maximum Savings with <br /><span className="text-primary-500 underline decoration-primary-500/30 underline-offset-8">Verified Coupons</span>
                     </h1>
-                    <p className="text-lg md:text-xl text-secondary-200 mb-10 max-w-2xl mx-auto font-medium">
-                        Over 20,000+ Coupons. Grab one now!
+                    <p className="text-lg md:text-xl text-secondary-200 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+                        Join millions of shoppers who save every day with our hand-picked, exclusive deals from your favorite global brands.
                     </p>
 
                     <SearchForm />
+
+                    <div className="mt-8 flex items-center justify-center gap-6 text-secondary-400 text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            1,200+ New Deals Today
+                        </div>
+                        <div className="hidden sm:block text-secondary-700">|</div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                            Verified & Tested
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -122,22 +134,37 @@ export default async function HomePage() {
                 </section>
             )}
 
-            {/* Popular Stores */}
+            {/* Featured Stores */}
             {popularStores.length > 0 && (
-                <section className="bg-white py-16 border-t border-secondary-100">
+                <section className="bg-slate-50 py-20 border-y border-slate-200/60">
                     <div className="container mx-auto px-4">
-                        <div className="flex items-center justify-between mb-8 border-b border-secondary-100 pb-4">
-                            <h2 className="text-2xl font-bold text-secondary-800">Featured Stores</h2>
-                            <Link href="/stores" className="text-primary-600 hover:text-primary-700 font-medium text-sm">View All &gt;</Link>
+                        <div className="flex items-center justify-between mb-12">
+                            <div>
+                                <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Featured Brands</h2>
+                                <p className="text-slate-500 mt-2">Shop and save with top-rated global retailers</p>
+                            </div>
+                            <Link href="/stores" className="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-5 py-2 rounded-full font-bold text-sm hover:bg-slate-50 transition-all hover:shadow-sm">
+                                Explore All Stores <ChevronRight size={16} />
+                            </Link>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-8 gap-x-4">
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                             {popularStores.map((store: any) => (
                                 <Link
                                     href={`/store/${store.slug}`}
                                     key={store._id}
-                                    className="text-sm font-medium text-secondary-500 hover:text-primary-600 transition-colors"
+                                    className="group bg-white border border-slate-100 p-6 rounded-2xl flex flex-col items-center justify-center transition-all hover:shadow-xl hover:-translate-y-1 hover:border-primary-100"
                                 >
-                                    {store.name}
+                                    <div className="w-20 h-20 bg-white rounded-xl shadow-sm border border-slate-50 flex items-center justify-center overflow-hidden mb-4 p-2 group-hover:shadow-md transition-shadow">
+                                        {store.logoUrl ? (
+                                            <img src={store.logoUrl} alt={store.name} className="w-full h-full object-contain" />
+                                        ) : (
+                                            <span className="text-2xl font-bold text-slate-200">{store.name.substring(0, 1)}</span>
+                                        )}
+                                    </div>
+                                    <span className="text-sm font-bold text-slate-700 group-hover:text-primary-600 transition-colors text-center truncate w-full">
+                                        {store.name}
+                                    </span>
                                 </Link>
                             ))}
                         </div>

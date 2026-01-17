@@ -12,7 +12,7 @@ export default function SearchForm({ compact = false }: { compact?: boolean }) {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         if (query.trim()) {
-            router.push(`/search?query=${encodeURIComponent(query)}`);
+            router.push(`/search?q=${encodeURIComponent(query)}`);
         }
     };
 

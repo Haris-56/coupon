@@ -133,13 +133,24 @@ export default function EditForm({ store }: { store: any }) {
                                     className="w-full px-4 py-2.5 bg-white border border-secondary-200 rounded-lg text-sm text-secondary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all shadow-sm"
                                 >
                                     <option value="">Other / None</option>
-                                    <option value="Impact">Impact</option>
-                                    <option value="CJ">CJ Affiliate</option>
+                                    <option value="Admitad">Admitad</option>
+                                    <option value="Commission junction">Commission junction</option>
+                                    <option value="Clixgalore">Clixgalore</option>
                                     <option value="Awin">Awin</option>
+                                    <option value="Admitad lite">Admitad lite</option>
+                                    <option value="Share a sale">Share a sale</option>
+                                    <option value="Affiliate one">Affiliate one</option>
+                                    <option value="Link bux">Link bux</option>
+                                    <option value="Commission factory">Commission factory</option>
+                                    <option value="Affiliate future">Affiliate future</option>
                                     <option value="Rakuten">Rakuten</option>
-                                    <option value="ShareASale">ShareASale</option>
-                                    <option value="FlexOffers">FlexOffers</option>
-                                    <option value="Partnerize">Partnerize</option>
+                                    <option value="Skimlinks">Skimlinks</option>
+                                    <option value="Trade doubler">Trade doubler</option>
+                                    <option value="Impact radius">Impact radius</option>
+                                    <option value="Trade tracker">Trade tracker</option>
+                                    <option value="indoleads">indoleads</option>
+                                    <option value="Pepperjam">Pepperjam</option>
+                                    <option value="Paid of results">Paid of results</option>
                                 </select>
                             </div>
                         </div>

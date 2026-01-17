@@ -26,6 +26,9 @@ export async function Header() {
 
                 {/* Navigation */}
                 <nav className="flex items-center gap-6">
+                    <Link href="/" className="text-secondary-600 hover:text-primary-600 font-medium text-sm hidden sm:block transition-colors">
+                        Home
+                    </Link>
                     <Link href="/categories" className="text-secondary-600 hover:text-primary-600 font-medium text-sm hidden sm:block transition-colors">
                         Categories
                     </Link>

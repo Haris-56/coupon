@@ -22,6 +22,8 @@ export interface ICoupon extends Document {
     imageUrl?: string; // Optional specific image
     seoTitle?: string;
     seoDescription?: string;
+    votesUp: number;
+    votesDown: number;
 
     createdAt: Date;
     updatedAt: Date;
@@ -49,6 +51,8 @@ const CouponSchema: Schema = new Schema(
         imageUrl: { type: String },
         seoTitle: { type: String },
         seoDescription: { type: String },
+        votesUp: { type: Number, default: 0 },
+        votesDown: { type: Number, default: 0 },
     },
     { timestamps: true }
 );
