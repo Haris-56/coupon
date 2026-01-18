@@ -12,11 +12,8 @@ export async function Header() {
         <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-secondary-100">
             <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2">
-                    <div className="bg-primary-600 text-white p-1.5 rounded-lg">
-                        <span className="font-bold text-lg">CP</span>
-                    </div>
-                    <span className="font-bold text-xl text-secondary-900 hidden sm:block">CouponPro</span>
+                <Link href="/" className="flex items-center">
+                    <img src="/discountcouponn.png" alt="DiscountCouponn" className="h-10 md:h-14 w-auto" />
                 </Link>
 
                 {/* Search Bar - Hidden on mobile, visible on md+ */}

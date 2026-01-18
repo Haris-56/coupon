@@ -14,6 +14,9 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s | ${settings.siteName}`,
     },
     description: settings.siteDescription,
+    icons: {
+      icon: '/favicon.png',
+    },
   };
 }
 

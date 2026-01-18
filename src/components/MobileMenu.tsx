@@ -68,14 +68,8 @@ export function MobileMenu({ isAuth, role }: MobileMenuProps) {
                     </button>
 
                     {/* Logo */}
-                    <Link href="/" onClick={() => setIsOpen(false)} className="flex flex-col items-center gap-2 mb-6 mt-4">
-                        <div className="bg-primary-600 text-white p-3 rounded-2xl shadow-primary-200 shadow-lg">
-                            <span className="font-bold text-2xl">CP</span>
-                        </div>
-                        <div className="text-center">
-                            <span className="font-extrabold text-xl text-secondary-900 block leading-none">CouponPro</span>
-                            <span className="text-xs text-secondary-500 font-medium tracking-wider uppercase">Hub</span>
-                        </div>
+                    <Link href="/" onClick={() => setIsOpen(false)} className="mb-6 mt-4">
+                        <img src="/discountcoupon-mobile.png" alt="DiscountCouponn" className="h-14 w-auto" />
                     </Link>
                 </div>
 

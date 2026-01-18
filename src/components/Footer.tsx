@@ -11,7 +11,9 @@ export async function Footer() {
             <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
                 {/* Brand */}
                 <div className="space-y-4">
-                    <h3 className="text-2xl font-bold text-white">{settings.siteName}</h3>
+                    <Link href="/">
+                        <img src="/discountcouponn.png" alt="DiscountCouponn" className="h-12 w-auto brightness-0 invert" />
+                    </Link>
                     <p className="text-sm text-slate-400">
                         {settings.siteDescription}
                     </p>
@@ -48,7 +50,7 @@ export async function Footer() {
                         {settings.linkedinUrl && <a href={settings.linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors"><Linkedin size={20} /></a>}
                     </div>
                     <p className="mt-6 text-xs text-slate-500">
-                        &copy; {new Date().getFullYear()} {settings.siteName}. All rights reserved.
+                        &copy; {new Date().getFullYear()} DiscountCouponn. All rights reserved.
                     </p>
                 </div>
             </div>
