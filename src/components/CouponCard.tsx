@@ -28,7 +28,14 @@ export function CouponCard({ coupon, layout = 'vertical' }: CouponCardProps) {
 
     const handleAction = (e: React.MouseEvent) => {
         e.preventDefault();
-        // Show modal for all types, let the user click "Go to Deal" in the modal
+
+        // Open the tracking link in a new tab
+        const link = coupon.trackingLink || coupon.store?.affiliateLink || '#';
+        if (link !== '#') {
+            window.open(link, '_blank');
+        }
+
+        // Show modal for all types
         setShowModal(true);
     };
 
@@ -122,7 +129,7 @@ export function CouponCard({ coupon, layout = 'vertical' }: CouponCardProps) {
                                     )}
                                 >
                                     <span className="text-2xl group-hover:scale-110 transition-transform">🙁</span>
-                                    <span className="text-sm font-bold text-secondary-600 group-hover:text-red-600">No</span>
+                                    <span className="text-sm font-bold text-secondary-600 group-hover:text-red-600">{coupon.votesDown || 0}</span>
                                 </button>
                                 <button
                                     disabled={hasVoted}
@@ -133,7 +140,7 @@ export function CouponCard({ coupon, layout = 'vertical' }: CouponCardProps) {
                                     )}
                                 >
                                     <span className="text-2xl group-hover:scale-110 transition-transform">😊</span>
-                                    <span className="text-sm font-bold text-secondary-600 group-hover:text-green-600">Yes</span>
+                                    <span className="text-sm font-bold text-secondary-600 group-hover:text-green-600">{coupon.votesUp || 0}</span>
                                 </button>
                             </div>
                         </div>
@@ -165,9 +172,21 @@ export function CouponCard({ coupon, layout = 'vertical' }: CouponCardProps) {
 
                     {/* Content Section */}
                     <div className="flex-1 min-w-0 w-full text-center sm:text-left">
-                        <div className="flex gap-2 mb-1 justify-center sm:justify-start">
+                        <div className="flex flex-wrap items-center gap-2 mb-1 justify-center sm:justify-start">
                             {coupon.isVerified && <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1"><Check size={10} strokeWidth={4} /> Verified</span>}
                             {coupon.isExclusive && <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Exclusive</span>}
+
+                            {/* Vote Counts on Card */}
+                            <div className="flex items-center gap-2 ml-auto sm:ml-0 bg-secondary-50 px-2 py-0.5 rounded-full border border-secondary-100">
+                                <div className="flex items-center gap-1 grayscale-[0.5]">
+                                    <span className="text-xs">😊</span>
+                                    <span className="text-[10px] font-bold text-secondary-600">{coupon.votesUp || 0}</span>
+                                </div>
+                                <div className="flex items-center gap-1 grayscale-[0.5]">
+                                    <span className="text-xs">🙁</span>
+                                    <span className="text-[10px] font-bold text-secondary-600">{coupon.votesDown || 0}</span>
+                                </div>
+                            </div>
                         </div>
                         <h3 className="text-lg font-bold text-secondary-800 mb-1 lg:pr-20 title-clamp">{coupon.title}</h3>
                         <p className="text-secondary-500 text-sm line-clamp-2 md:line-clamp-1 mb-2">{coupon.description}</p>
@@ -216,8 +235,18 @@ export function CouponCard({ coupon, layout = 'vertical' }: CouponCardProps) {
                         </div>
                         <div>
                             <Link href={`/store/${coupon.store?.slug}`} className="text-xs text-secondary-500 hover:text-primary-600 font-bold uppercase tracking-wider block mb-0.5">{coupon.store?.name}</Link>
-                            <div className="flex gap-2">
+                            <div className="flex items-center gap-2">
                                 {coupon.isVerified && <span className="text-[10px] font-bold text-green-600 flex items-center gap-0.5"><Check size={10} /> Verified</span>}
+                                <div className="flex items-center gap-2 bg-secondary-50 px-1.5 py-0.5 rounded-full border border-secondary-100">
+                                    <div className="flex items-center gap-0.5">
+                                        <span className="text-[10px]">😊</span>
+                                        <span className="text-[10px] font-bold text-secondary-500">{coupon.votesUp || 0}</span>
+                                    </div>
+                                    <div className="flex items-center gap-0.5">
+                                        <span className="text-[10px]">🙁</span>
+                                        <span className="text-[10px] font-bold text-secondary-500">{coupon.votesDown || 0}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

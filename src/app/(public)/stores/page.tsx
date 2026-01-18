@@ -16,7 +16,7 @@ async function getStores() {
 export default async function StoresPage(props: { searchParams: Promise<{ char?: string; q?: string }> }) {
     const searchParams = await props.searchParams;
     const stores = await getStores();
-    const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
 
     const selectedChar = (searchParams.char || '').toUpperCase();
     const q = (searchParams.q || '').toLowerCase();
